@@ -161,8 +161,7 @@ st.divider()
 st.markdown(
     """
     <p style="text-align:center; opacity:0.7; font-size:14px;">
-    Thanks to my Dad for making this website possible<br>
-    Built with Streamlit • Hosted on GitHub • Updated anytime
+    Thanks to my Dad for making this website possible.
     </p>
     """,
     unsafe_allow_html=True,
