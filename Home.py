@@ -40,56 +40,56 @@ st.markdown(
 st.write("")  # spacing
 
 # ---------- Centered Profile + Text (side by side) ----------
+import streamlit as st
+from pathlib import Path
+from PIL import Image, ImageOps
+
 ROOT = Path(__file__).resolve().parent
 profile_path = ROOT / "assets" / "profile" / "mila_profile_2025.jpg"
 
-img = Image.open(profile_path)
+# --- Responsive sizing CSS (works for st.image because it renders an <img>) ---
+st.markdown("""
+<style>
+/* target the first image in the first column area is hard, so we use a wrapper class */
+.mila-profile-host img {
+  width: clamp(140px, 28vw, 240px) !important;
+  height: auto !important;
+  border-radius: 18px !important;
+  object-fit: cover !important;
+  display:block;
+  margin-left:auto;
+  margin-right:auto;
+}
 
-# Create centered layout using spacer columns
+/* Phone portrait */
+@media (max-width: 480px) and (orientation: portrait) {
+  .mila-profile-host img { width: 160px !important; }
+}
+
+/* Phone landscape */
+@media (max-width: 900px) and (orientation: landscape) {
+  .mila-profile-host img { width: 140px !important; }
+}
+</style>
+""", unsafe_allow_html=True)
+
 sp1, col1, col2, sp2 = st.columns([1,2,4,1], vertical_alignment="top")
 
-def img_to_data_uri(path: Path) -> str:
-    b = path.read_bytes()
-    return "data:image/jpeg;base64," + base64.b64encode(b).decode("utf-8")
-
-profile_uri = img_to_data_uri(profile_path)
+@st.cache_data(show_spinner=False)
+def load_profile(path: str):
+    im = Image.open(path)
+    im = ImageOps.exif_transpose(im)
+    return im
 
 with col1:
-    st.markdown(
-        f"""
-        <style>
-        .mila-profile-wrap {{
-            display:flex;
-            justify-content:center;
-        }}
-        .mila-profile {{
-            width: clamp(140px, 28vw, 240px);
-            height: auto;
-            border-radius: 18px;
-            object-fit: cover;
-        }}
+    st.markdown('<div class="mila-profile-host">', unsafe_allow_html=True)
 
-        /* Phone portrait */
-        @media (max-width: 480px) and (orientation: portrait) {{
-            .mila-profile {{
-                width: 160px;
-            }}
-        }}
+    # ✅ show spinner while it loads/decodes (especially first time on mobile)
+    with st.spinner("Loading..."):
+        st.image(load_profile(str(profile_path)))
 
-        /* Phone landscape: slightly smaller so it doesn't dominate */
-        @media (max-width: 900px) and (orientation: landscape) {{
-            .mila-profile {{
-                width: 140px;
-            }}
-        }}
-        </style>
+    st.markdown("</div>", unsafe_allow_html=True)
 
-        <div class="mila-profile-wrap">
-            <img class="mila-profile" src="{profile_uri}" />
-        </div>
-        """,
-        unsafe_allow_html=True,
-    )
 
 with col2:
     html = textwrap.dedent("""
