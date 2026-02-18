@@ -64,10 +64,6 @@ def key_for_item(x: dict) -> str:
 def open_details(photo_key: str):
     st.session_state.selected_photo_key = photo_key
 
-def close_details():
-    st.session_state.selected_photo_key = None
-    st.rerun()
-
 # =========================
 # Pro mobile CSS
 # =========================
@@ -135,7 +131,7 @@ if "selected_photo_key" not in st.session_state:
 items_by_key = {key_for_item(x): x for x in items if key_for_item(x)}
 
 # =========================
-# Dialog popup (decorator style, compatible with your Streamlit)
+# Dialog popup
 # =========================
 @st.dialog("Photo Details", width="large")
 def details_dialog(x: dict):
@@ -164,7 +160,7 @@ def details_dialog(x: dict):
         st.markdown("### Story")
         st.write(story if story else "No story yet — add one in photos.json!")
 
-        st.button("Close", type="primary", on_click=close_details, use_container_width=True)
+    # No Close button — use the dialog's built-in X to close
 
 # If a photo is selected, open the dialog
 sel_key = st.session_state.get("selected_photo_key")
@@ -191,10 +187,8 @@ for i, x in enumerate(filtered):
             else:
                 st.error("Missing image")
 
-            # Title outside image box
             st.markdown(f"**{title}**")
 
-            # Responsive button (no double click)
             st.button(
                 "View details",
                 key=f"select_{k}",
