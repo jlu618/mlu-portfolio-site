@@ -1,0 +1,20 @@
+{
+  "videos": [
+    {
+      "id": "nyc-fashion-show-2025",
+      "title": "NYC Fashion Show 2025",
+      "story": "Highlights from the 2025 NYC Fashion Show. I wish I could attend it every year!",
+      "tags": ["2025", "USA", "Fashion", "Runway"],
+      "date": "2025-09-10",
+      "file": "nyc-fashion-show-2025.mp4"
+    },
+    {
+      "id": "bird-feeding-brisbane-oreillys-2023",
+      "title": "Bird Feeding at O'Reilly's 2023",
+      "story": "In February 2023, we traveled to Brisbane, Australia.\n\nOne of the fun moments was feeding colorful parrots at O’Reilly’s Rainforest Retreat in Lamington National Park.\n\nThe parrots were so friendly — they perched right on our heads and shoulders while we held out food, making the experience both exciting and magical.",
+      "tags": ["2023", "Australia", "Brisbane", "Travel"],
+      "date": "2023-07-15",
+      "file": "bird-feeding-brisbane-oreillys-2023.mp4"
+    }
+  ]
+}

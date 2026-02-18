@@ -1,0 +1,5 @@
+streamlit==1.47.0
+openai==2.21.0
+python-dotenv
+pandas
+Pillow
