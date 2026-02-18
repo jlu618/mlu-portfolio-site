@@ -3,6 +3,7 @@ from pathlib import Path
 from PIL import Image
 import streamlit.components.v1 as components
 import textwrap
+import base64
 
 st.set_page_config(
     page_title="Mila Lu | Portfolio",
@@ -47,8 +48,48 @@ img = Image.open(profile_path)
 # Create centered layout using spacer columns
 sp1, col1, col2, sp2 = st.columns([1,2,4,1], vertical_alignment="top")
 
+def img_to_data_uri(path: Path) -> str:
+    b = path.read_bytes()
+    return "data:image/jpeg;base64," + base64.b64encode(b).decode("utf-8")
+
+profile_uri = img_to_data_uri(profile_path)
+
 with col1:
-    st.image(img, width=240)
+    st.markdown(
+        f"""
+        <style>
+        .mila-profile-wrap {{
+            display:flex;
+            justify-content:center;
+        }}
+        .mila-profile {{
+            width: clamp(140px, 28vw, 240px);
+            height: auto;
+            border-radius: 18px;
+            object-fit: cover;
+        }}
+
+        /* Phone portrait */
+        @media (max-width: 480px) and (orientation: portrait) {{
+            .mila-profile {{
+                width: 160px;
+            }}
+        }}
+
+        /* Phone landscape: slightly smaller so it doesn't dominate */
+        @media (max-width: 900px) and (orientation: landscape) {{
+            .mila-profile {{
+                width: 140px;
+            }}
+        }}
+        </style>
+
+        <div class="mila-profile-wrap">
+            <img class="mila-profile" src="{profile_uri}" />
+        </div>
+        """,
+        unsafe_allow_html=True,
+    )
 
 with col2:
     html = textwrap.dedent("""
