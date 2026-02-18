@@ -1,3 +1,4 @@
+# pages/1_Photos.py
 import json
 from pathlib import Path
 from datetime import datetime
@@ -5,16 +6,23 @@ from datetime import datetime
 import streamlit as st
 from PIL import Image, ImageOps
 
+# =========================
+# Page config
+# =========================
 st.set_page_config(page_title="My Photo Scrapbook", page_icon="📸", layout="wide")
 
-# --- Paths ---
+# =========================
+# Paths
+# =========================
 ROOT = Path(__file__).resolve().parents[1]
 PHOTOS_DIR = ROOT / "assets" / "photos"
 META_PATH = ROOT / "assets" / "data" / "photos.json"
 
 st.title("Photos")
 
-# --- Load metadata ---
+# =========================
+# Load metadata
+# =========================
 if not META_PATH.exists():
     st.error(f"Missing metadata file: {META_PATH}")
     st.stop()
@@ -26,7 +34,9 @@ if not isinstance(items, list):
     st.error("photos.json should be a JSON list (array) of photo objects.")
     st.stop()
 
-# --- Utilities ---
+# =========================
+# Utilities
+# =========================
 def safe_date(s: str) -> datetime:
     try:
         return datetime.strptime(s, "%Y-%m-%d")
@@ -47,13 +57,20 @@ def album_of(rel_path: str) -> str:
     parts = rel_path.split("/")
     return parts[0] if len(parts) > 1 else "other"
 
+def key_for_item(x: dict) -> str:
+    # In your data, file path is a stable unique key
+    return str(x.get("file", "")).strip()
+
 def open_details(photo_key: str):
     st.session_state.selected_photo_key = photo_key
 
 def close_details():
     st.session_state.selected_photo_key = None
+    st.rerun()
 
-# --- Pro mobile CSS (compact + tappable) ---
+# =========================
+# Pro mobile CSS
+# =========================
 st.markdown(
     """
 <style>
@@ -67,7 +84,9 @@ st.markdown(
     unsafe_allow_html=True,
 )
 
-# --- Sidebar filters ---
+# =========================
+# Sidebar filters
+# =========================
 st.sidebar.header("Filter")
 
 albums = sorted({album_of(x.get("file", "")) for x in items if x.get("file")})
@@ -85,7 +104,9 @@ selected_tags = st.sidebar.multiselect("Tags", all_tags)
 sort_mode = st.sidebar.selectbox("Sort", ["Newest first", "Oldest first", "A → Z"])
 thumbs_per_row = st.sidebar.slider("Photos per row", 2, 6, 4)
 
-# --- Filter items ---
+# =========================
+# Filter items
+# =========================
 filtered = items
 
 if album_key != "ALL":
@@ -105,50 +126,50 @@ if not filtered:
     st.info("No photos match your filters. Try clearing tags.")
     st.stop()
 
-# --- Selected item state (key, not whole dict) ---
-# Using a stable key fixes "sometimes needs two clicks" issues.
+# =========================
+# Selected item state (stable key)
+# =========================
 if "selected_photo_key" not in st.session_state:
     st.session_state.selected_photo_key = None
-
-def key_for_item(x: dict) -> str:
-    # file path is unique in your dataset; perfect as a stable key
-    return str(x.get("file", "")).strip()
 
 items_by_key = {key_for_item(x): x for x in items if key_for_item(x)}
 
 # =========================
-# Details modal (no scrolling, mobile-friendly)
+# Dialog popup (decorator style, compatible with your Streamlit)
 # =========================
-sel_key = st.session_state.selected_photo_key
-if sel_key and sel_key in items_by_key:
-    x = items_by_key[sel_key]
+@st.dialog("Photo Details", width="large")
+def details_dialog(x: dict):
     rel = x.get("file", "")
     title = x.get("title", "Untitled")
     date = x.get("date", "")
     tags = x.get("tags", [])
     story = (x.get("story") or "").strip()
 
-    with st.dialog(title, width="large"):
-        left, right = st.columns([3, 2], gap="large")
+    st.markdown(f"## **{title}**")
 
-        with left:
-            if file_exists(rel):
-                st.image(load_image(rel), use_container_width=True)
-            else:
-                st.error(f"Missing file: {rel}")
+    left, right = st.columns([3, 2], gap="large")
 
-        with right:
-            if title:
-                st.markdown(f"### **{title}**")
-            if date:
-                st.markdown(f"🗓️ **Date:** {date}")
-            if tags:
-                st.markdown("🏷️ " + " · ".join(tags))
+    with left:
+        if file_exists(rel):
+            st.image(load_image(rel), use_container_width=True)
+        else:
+            st.error(f"Missing file: {rel}")
 
-            st.markdown("### Story")
-            st.write(story if story else "No story yet — add one in photos.json!")
+    with right:
+        if date:
+            st.markdown(f"🗓️ **Date:** {date}")
+        if tags:
+            st.markdown("🏷️ " + " · ".join(tags))
 
-            st.button("Close", type="primary", on_click=close_details, use_container_width=True)
+        st.markdown("### Story")
+        st.write(story if story else "No story yet — add one in photos.json!")
+
+        st.button("Close", type="primary", on_click=close_details, use_container_width=True)
+
+# If a photo is selected, open the dialog
+sel_key = st.session_state.get("selected_photo_key")
+if sel_key and sel_key in items_by_key:
+    details_dialog(items_by_key[sel_key])
 
 # =========================
 # Gallery
@@ -173,7 +194,7 @@ for i, x in enumerate(filtered):
             # Title outside image box
             st.markdown(f"**{title}**")
 
-            # Use on_click callback -> more responsive (no double click)
+            # Responsive button (no double click)
             st.button(
                 "View details",
                 key=f"select_{k}",
@@ -181,5 +202,3 @@ for i, x in enumerate(filtered):
                 args=(k,),
                 use_container_width=True,
             )
-
-
