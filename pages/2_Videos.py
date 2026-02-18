@@ -89,10 +89,6 @@ def details_dialog(v):
     st.caption("Story")
     st.write(v.get("story") or "—")
 
-    st.caption("ID")
-    st.code(v.get("id"))
-
-
 # =========================
 # Gallery grid
 # =========================

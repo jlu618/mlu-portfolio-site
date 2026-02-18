@@ -47,6 +47,26 @@ def album_of(rel_path: str) -> str:
     parts = rel_path.split("/")
     return parts[0] if len(parts) > 1 else "other"
 
+def open_details(photo_key: str):
+    st.session_state.selected_photo_key = photo_key
+
+def close_details():
+    st.session_state.selected_photo_key = None
+
+# --- Pro mobile CSS (compact + tappable) ---
+st.markdown(
+    """
+<style>
+.block-container { padding-top: 1.2rem; padding-bottom: 2.5rem; }
+@media (max-width: 640px){
+  .block-container { padding-left: 0.9rem; padding-right: 0.9rem; }
+  button[kind="secondary"], button[kind="primary"] { width: 100%; }
+}
+</style>
+""",
+    unsafe_allow_html=True,
+)
+
 # --- Sidebar filters ---
 st.sidebar.header("Filter")
 
@@ -85,25 +105,31 @@ if not filtered:
     st.info("No photos match your filters. Try clearing tags.")
     st.stop()
 
-# --- Selected item state ---
-if "selected_photo" not in st.session_state:
-    st.session_state.selected_photo = None
+# --- Selected item state (key, not whole dict) ---
+# Using a stable key fixes "sometimes needs two clicks" issues.
+if "selected_photo_key" not in st.session_state:
+    st.session_state.selected_photo_key = None
 
-# ✅ Detail view placeholder BEFORE the gallery (so it shows at the top)
-detail_container = st.container()
+def key_for_item(x: dict) -> str:
+    # file path is unique in your dataset; perfect as a stable key
+    return str(x.get("file", "")).strip()
 
-with detail_container:
-    if st.session_state.selected_photo:
-        x = st.session_state.selected_photo
-        rel = x.get("file", "")
-        title = x.get("title", "Untitled")
-        date = x.get("date", "")
-        tags = x.get("tags", [])
-        story = (x.get("story") or "").strip()
+items_by_key = {key_for_item(x): x for x in items if key_for_item(x)}
 
-        st.markdown(f"## {title}")
+# =========================
+# Details modal (no scrolling, mobile-friendly)
+# =========================
+sel_key = st.session_state.selected_photo_key
+if sel_key and sel_key in items_by_key:
+    x = items_by_key[sel_key]
+    rel = x.get("file", "")
+    title = x.get("title", "Untitled")
+    date = x.get("date", "")
+    tags = x.get("tags", [])
+    story = (x.get("story") or "").strip()
 
-        left, right = st.columns([3, 2], vertical_alignment="top")
+    with st.dialog(title, width="large"):
+        left, right = st.columns([3, 2], gap="large")
 
         with left:
             if file_exists(rel):
@@ -112,6 +138,8 @@ with detail_container:
                 st.error(f"Missing file: {rel}")
 
         with right:
+            if title:
+                st.markdown(f"### **{title}**")
             if date:
                 st.markdown(f"🗓️ **Date:** {date}")
             if tags:
@@ -120,25 +148,20 @@ with detail_container:
             st.markdown("### Story")
             st.write(story if story else "No story yet — add one in photos.json!")
 
-            if st.button("Close", key="close_detail", use_container_width=True):
-                st.session_state.selected_photo = None
-                st.rerun()
-
-
-        st.divider()
-    else:
-        st.caption("Click **View Details** to view it larger with its story.")
+            st.button("Close", type="primary", on_click=close_details, use_container_width=True)
 
 # =========================
 # Gallery
 # =========================
 st.subheader("Gallery")
+st.caption("Tap **View details** to open the photo instantly in a pop-up (great on mobile).")
 
-cols = st.columns(thumbs_per_row)
+cols = st.columns(thumbs_per_row, gap="large")
 
 for i, x in enumerate(filtered):
     rel = x.get("file", "")
     title = x.get("title", "Untitled")
+    k = key_for_item(x)
 
     with cols[i % thumbs_per_row]:
         with st.container(border=True):
@@ -147,11 +170,16 @@ for i, x in enumerate(filtered):
             else:
                 st.error("Missing image")
 
-            # ✅ Title as bold text (no box)
+            # Title outside image box
             st.markdown(f"**{title}**")
 
-            # ✅ Clickable action without "Open"/"Favorites" wording
-            if st.button("View details", key=f"select_{rel}", use_container_width=True):
-                st.session_state.selected_photo = x
-                st.rerun()
+            # Use on_click callback -> more responsive (no double click)
+            st.button(
+                "View details",
+                key=f"select_{k}",
+                on_click=open_details,
+                args=(k,),
+                use_container_width=True,
+            )
+
 
