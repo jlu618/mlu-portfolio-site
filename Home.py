@@ -106,7 +106,7 @@ st.markdown("""
 <style>
 /* target the first image in the first column area is hard, so we use a wrapper class */
 .mila-profile-host img {
-  width: clamp(120px, 20vw, 180px) !important;
+  width: clamp(144px, 20vw, 10px) !important;
   height: auto !important;
   border-radius: 18px !important;
   object-fit: cover !important;
@@ -150,8 +150,8 @@ with col2:
         <div class="mila-intro">
           <p>
             Welcome to my personal website. I’m Mila — and this is a space where I share
-            my experiences, creativity, and growth. I enjoy fashion, guitar, tennis, travel,
-            storytelling, and exploring new ideas. My dad and I built this site together
+            my experiences, hobbies, and ideas. I enjoy fashion, guitar, tennis, traveling,
+            hiking, and exploring new ideas. My dad and I built this site together
             to document my journey and the moments that matter to me.
           </p>
         </div>
