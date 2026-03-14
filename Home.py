@@ -22,8 +22,10 @@ st.markdown("""
 }
 
 .mila-intro p{
-  margin: 0;                    /* remove default paragraph margin */
+  margin-top: 8px;
+  margin-bottom: 8px;
 }
+
 
 /* Mobile tweaks */
 @media (max-width: 640px){
