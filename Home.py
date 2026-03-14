@@ -152,10 +152,9 @@ with col2:
             Welcome to my personal website. I’m Mila — and this is a space where I share
             my experiences, hobbies, and ideas. I enjoy fashion, guitar, tennis, traveling,
             hiking, baking, and exploring new ideas. My dad and I built this site together
-            to document my journey and the moments that matter to me.
-
-            Through photos, videos, and stories, I hope to capture the things I experience 
-            along the way. Thank you for visiting this site.
+            to document my journey and the moments that matter to me. \nThrough photos, 
+            videos, and stories, I hope to capture the things I experience along the way.
+             Thank you for visiting this site.
           </p>
         </div>
         """,
