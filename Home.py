@@ -169,7 +169,7 @@ with col2:
 
     st.page_link("pages/1_Photos.py", label="📸  Photos — Memories in Frames")
     st.page_link("pages/2_Videos.py", label="🎬  Videos — Moments in Motion")
-    st.page_link("pages/3_Writings.py", label="✍️  Writings — Coming Soon")
+    st.page_link("pages/3_Writings.py", label="✍️  Writings — Thoughts in Words")
     # st.page_link("pages/4_Resume.py", label="📄  Resume — Coming Soon")
 
 
