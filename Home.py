@@ -146,20 +146,24 @@ with col1:
 
 with col2:
     st.markdown(
-        """
-        <div class="mila-intro">
-          <p>
-            Welcome to my personal website. I’m Mila — and this is a space where I share
-            my experiences, hobbies, and ideas. I enjoy fashion, guitar, tennis, traveling,
-            hiking, baking, and exploring new ideas. My dad and I built this site together
-            to document my journey and the moments that matter to me. \nThrough photos, 
-            videos, and stories, I hope to capture the things I experience along the way.
-             Thank you for visiting this site.
-          </p>
-        </div>
-        """,
-        unsafe_allow_html=True,
-    )
+    """
+    <div class="mila-intro">
+      <p>
+        Welcome to my personal website. I’m Mila — and this is a space where I share
+        my experiences, hobbies, and ideas. I enjoy fashion, guitar, tennis, traveling,
+        hiking, baking, and exploring new ideas. My dad and I built this site together
+        to document my journey and the moments that matter to me.
+      </p>
+
+      <p>
+        Through photos, videos, and stories, I hope to capture the things I experience
+        along the way. Thank you for visiting this site.
+      </p>
+    </div>
+    """,
+    unsafe_allow_html=True,
+)
+
 
     st.page_link("pages/1_Photos.py", label="📸  Photos — Memories in Frames")
     st.page_link("pages/2_Videos.py", label="🎬  Videos — Moments in Motion")
