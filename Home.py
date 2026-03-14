@@ -106,7 +106,7 @@ st.markdown("""
 <style>
 /* target the first image in the first column area is hard, so we use a wrapper class */
 .mila-profile-host img {
-  width: clamp(140px, 28vw, 240px) !important;
+  width: clamp(120px, 20vw, 180px) !important;
   height: auto !important;
   border-radius: 18px !important;
   object-fit: cover !important;
