@@ -1,25 +1,18 @@
 import json
-from pathlib import Path
+import re
 from datetime import datetime
-import streamlit.components.v1 as components
-import streamlit as st
+from pathlib import Path
 
-# =========================
-# Page config
-# =========================
+import streamlit as st
+import streamlit.components.v1 as components
+
+
 st.set_page_config(page_title="Videos", page_icon="🎬", layout="wide")
 
-# =========================
-# Paths  ⭐ UPDATED FOR /assets/
-# =========================
 ROOT = Path(__file__).resolve().parents[1]
+META_PATH = ROOT / "assets" / "data" / "videos.json"
 
-def google_drive_video_preview_url(file_id: str) -> str:
-    return f"https://drive.google.com/file/d/{file_id}/preview"
 
-# =========================
-# Helpers
-# =========================
 def load_meta():
     if not META_PATH.exists():
         return {"videos": []}
@@ -29,8 +22,38 @@ def load_meta():
         return {"videos": []}
 
 
-def video_path(file_name: str):
-    return VIDEOS_DIR / file_name
+def get_drive_id(url_or_id: str) -> str | None:
+    if not url_or_id:
+        return None
+
+    file_match = re.search(r"drive\.google\.com/file/d/([^/]+)", url_or_id)
+    if file_match:
+        return file_match.group(1)
+
+    id_match = re.search(r"[?&]id=([^&]+)", url_or_id)
+    if id_match:
+        return id_match.group(1)
+
+    return url_or_id if re.fullmatch(r"[-\w]{20,}", url_or_id) else None
+
+
+def google_drive_video_preview_url(url_or_id: str) -> str | None:
+    file_id = get_drive_id(url_or_id)
+    if not file_id:
+        return None
+    return f"https://drive.google.com/file/d/{file_id}/preview"
+
+
+def show_drive_video(video: dict, height: int = 360):
+    source = video.get("drive_id") or video.get("file", "")
+    preview_url = google_drive_video_preview_url(source)
+
+    if not preview_url:
+        st.warning("Preview unavailable")
+        st.code(source or "Missing Google Drive file URL")
+        return
+
+    components.iframe(preview_url, height=height)
 
 
 def parse_date(date_str: str):
@@ -44,55 +67,38 @@ def parse_date(date_str: str):
 
 def pretty_date(date_str: str):
     d = parse_date(date_str)
-    return d.strftime("%b %d, %Y") if d else (date_str or "—")
+    return d.strftime("%b %d, %Y") if d else (date_str or "")
 
 
-# =========================
-# Header
-# =========================
 st.title("🎬 Videos")
-
-meta = load_meta()
-videos = meta.get("videos", [])
 
 if not META_PATH.exists():
     st.error("Missing assets/data/videos.json")
     st.stop()
 
+meta = load_meta()
+videos = meta.get("videos", [])
+
 st.divider()
 
-# =========================
-# Dialog popup
-# =========================
+
 @st.dialog("Video Details", width="large")
-def details_dialog(v):
-    st.markdown(f"## **{v.get('title','Untitled')}**")
+def details_dialog(video: dict):
+    st.markdown(f"## **{video.get('title', 'Untitled')}**")
 
-    if v.get("date"):
-        st.caption(pretty_date(v.get("date")))
+    if video.get("date"):
+        st.caption(pretty_date(video.get("date")))
 
-    fp = video_path(v.get("file", ""))
+    show_drive_video(video, height=420)
 
-    if not fp.exists():
-        st.error(f"Video not found: {fp}")
-        return
-
-    components.iframe(
-        google_drive_video_preview_url(v["drive_id"]),
-        height=360,
-    )
-
-
-    tags = ", ".join(v.get("tags", []))
+    tags = ", ".join(video.get("tags", []))
     if tags:
         st.caption(tags)
 
     st.caption("Story")
-    st.write(v.get("story") or "—")
+    st.write(video.get("story") or "")
 
-# =========================
-# Gallery grid
-# =========================
+
 if not videos:
     st.info("No videos found in videos.json")
     st.stop()
@@ -108,31 +114,22 @@ for _ in range(rows):
         if idx >= len(videos):
             break
 
-        v = videos[idx]
+        video = videos[idx]
         idx += 1
 
         with col:
-            st.markdown(f"**{v.get('title','Untitled')}**")
+            st.markdown(f"**{video.get('title', 'Untitled')}**")
 
-            if v.get("date"):
-                st.caption(pretty_date(v.get("date")))
+            if video.get("date"):
+                st.caption(pretty_date(video.get("date")))
 
-            fp = video_path(v.get("file", ""))
+            show_drive_video(video, height=320)
 
-            if fp.exists():
-                components.iframe(
-                    google_drive_video_preview_url(v["drive_id"]),
-                    height=360,
-                )
-            else:
-                st.warning("Preview unavailable")
-                st.code(f"Expected: assets/videos/{v.get('file')}")
-
-            tag_line = ", ".join(v.get("tags", []))
+            tag_line = ", ".join(video.get("tags", []))
             if tag_line:
                 st.caption(tag_line)
 
-            vid = v.get("id")
+            video_id = video.get("id") or get_drive_id(video.get("file", "")) or idx
 
-            if st.button("View details", key=f"view_{vid}", use_container_width=True):
-                details_dialog(v)
+            if st.button("View details", key=f"view_{video_id}", use_container_width=True):
+                details_dialog(video)
