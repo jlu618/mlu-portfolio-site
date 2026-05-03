@@ -169,6 +169,15 @@ if selected_id and selected_id in writings_by_id:
     if preview_url:
         st.markdown('<div class="pdf-frame">', unsafe_allow_html=True)
         components.iframe(preview_url, height=820, scrolling=True)
+        
+        st.divider()
+        st.markdown("### 💬 Leave a comment or feedback")
+        components.iframe(
+            "https://docs.google.com/forms/d/e/1FAIpQLSdX4vc7KLKybteTHnubqs_0tRfA1eSQ87-iKKCRFVFISOhizA/viewform?usp=publish-editor",
+            height=600,
+            scrolling=True,
+        )
+
         st.markdown("</div>", unsafe_allow_html=True)
     else:
         st.warning("This writing does not have a valid Google Drive file URL.")
@@ -272,3 +281,8 @@ for _ in range(rows):
                         drive_view_url(writing.get("file", "")),
                         use_container_width=True,
                     )
+
+
+
+
+
