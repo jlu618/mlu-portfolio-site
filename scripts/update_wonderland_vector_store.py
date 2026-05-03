@@ -15,7 +15,7 @@ client = OpenAI(api_key=api_key)
 VECTOR_STORE_ID = st.secrets.get("WONDERLAND_VECTOR_STORE_ID", "")
 
 VECTOR_STORE_NAME = "Wonderland Story"
-PDF_PATH = Path("assets/writings_local/Wonderland_test.pdf")
+PDF_PATH = Path("assets/writings_local/Wonderland_202605.pdf")
 
 
 # =========================
