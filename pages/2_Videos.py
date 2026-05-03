@@ -1,7 +1,7 @@
 import json
 from pathlib import Path
 from datetime import datetime
-
+import streamlit.components.v1 as components
 import streamlit as st
 
 # =========================
@@ -14,11 +14,8 @@ st.set_page_config(page_title="Videos", page_icon="🎬", layout="wide")
 # =========================
 ROOT = Path(__file__).resolve().parents[1]
 
-ASSETS_DIR = ROOT / "assets"
-DATA_DIR = ASSETS_DIR / "data"
-VIDEOS_DIR = ASSETS_DIR / "videos"
-META_PATH = DATA_DIR / "videos.json"
-
+def google_drive_video_preview_url(file_id: str) -> str:
+    return f"https://drive.google.com/file/d/{file_id}/preview"
 
 # =========================
 # Helpers
@@ -80,7 +77,11 @@ def details_dialog(v):
         st.error(f"Video not found: {fp}")
         return
 
-    st.video(str(fp))
+    components.iframe(
+        google_drive_video_preview_url(v["drive_id"]),
+        height=360,
+    )
+
 
     tags = ", ".join(v.get("tags", []))
     if tags:
@@ -119,7 +120,10 @@ for _ in range(rows):
             fp = video_path(v.get("file", ""))
 
             if fp.exists():
-                st.video(str(fp))
+                components.iframe(
+                    google_drive_video_preview_url(v["drive_id"]),
+                    height=360,
+                )
             else:
                 st.warning("Preview unavailable")
                 st.code(f"Expected: assets/videos/{v.get('file')}")

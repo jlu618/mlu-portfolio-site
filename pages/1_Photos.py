@@ -4,19 +4,15 @@ from pathlib import Path
 from datetime import datetime
 
 import streamlit as st
-from PIL import Image, ImageOps
+import re
+
+ROOT = Path(__file__).resolve().parents[1]
+META_PATH = ROOT / "assets" / "data" / "photos.json"
 
 # =========================
 # Page config
 # =========================
 st.set_page_config(page_title="My Photo Scrapbook", page_icon="📸", layout="wide")
-
-# =========================
-# Paths
-# =========================
-ROOT = Path(__file__).resolve().parents[1]
-PHOTOS_DIR = ROOT / "assets" / "photos"
-META_PATH = ROOT / "assets" / "data" / "photos.json"
 
 st.title("Photos")
 
@@ -43,26 +39,22 @@ def safe_date(s: str) -> datetime:
     except Exception:
         return datetime(1900, 1, 1)
 
-@st.cache_data(show_spinner=False)
-def load_image(rel_path: str):
-    img_path = PHOTOS_DIR / rel_path
-    img = Image.open(img_path)
-    img = ImageOps.exif_transpose(img)
-    return img
-
-def file_exists(rel_path: str) -> bool:
-    return (PHOTOS_DIR / rel_path).exists()
-
-def album_of(rel_path: str) -> str:
-    parts = rel_path.split("/")
-    return parts[0] if len(parts) > 1 else "other"
-
 def key_for_item(x: dict) -> str:
     # In your data, file path is a stable unique key
     return str(x.get("file", "")).strip()
 
 def open_details(photo_key: str):
     st.session_state.selected_photo_key = photo_key
+
+def get_drive_id(url: str) -> str | None:
+    match = re.search(r"/d/([^/]+)", url)
+    return match.group(1) if match else None
+
+def google_drive_image_url(url: str, width: int = 1200) -> str:
+    file_id = get_drive_id(url)
+    if not file_id:
+        return url
+    return f"https://drive.google.com/thumbnail?id={file_id}&sz=w{width}"
 
 # =========================
 # Pro mobile CSS
@@ -85,28 +77,16 @@ st.markdown(
 # =========================
 st.sidebar.header("Filter")
 
-albums = sorted({album_of(x.get("file", "")) for x in items if x.get("file")})
-album_labels = {"life": "Life", "model": "Model", "other": "Other"}
-album_options = ["All"] + [album_labels.get(a, a.title()) for a in albums]
-label_to_album = {album_labels.get(a, a.title()): a for a in albums}
-label_to_album["All"] = "ALL"
-
-album_pick = st.sidebar.selectbox("Album", album_options)
-album_key = label_to_album.get(album_pick, "ALL")
-
 all_tags = sorted({t for x in items for t in x.get("tags", []) if isinstance(t, str)})
 selected_tags = st.sidebar.multiselect("Tags", all_tags)
 
-sort_mode = st.sidebar.selectbox("Sort", ["Newest first", "Oldest first", "A → Z"])
+sort_mode = st.sidebar.selectbox("Sort", ["Newest first", "Oldest first", "A - Z"])
 thumbs_per_row = st.sidebar.slider("Photos per row", 2, 6, 4)
 
 # =========================
 # Filter items
 # =========================
 filtered = items
-
-if album_key != "ALL":
-    filtered = [x for x in filtered if album_of(x.get("file", "")) == album_key]
 
 if selected_tags:
     filtered = [x for x in filtered if set(selected_tags).issubset(set(x.get("tags", [])))]
@@ -146,11 +126,10 @@ def details_dialog(x: dict):
     left, right = st.columns([3, 2], gap="large")
 
     with left:
-        if file_exists(rel):
-            st.image(load_image(rel), use_container_width=True)
-        else:
-            st.error(f"Missing file: {rel}")
-
+        st.image(
+            google_drive_image_url(rel, width=1600),
+            use_container_width=True
+        )
     with right:
         if date:
             st.markdown(f"🗓️ **Date:** {date}")
@@ -182,10 +161,10 @@ for i, x in enumerate(filtered):
 
     with cols[i % thumbs_per_row]:
         with st.container(border=True):
-            if file_exists(rel):
-                st.image(load_image(rel), use_container_width=True)
-            else:
-                st.error("Missing image")
+            st.image(
+                google_drive_image_url(rel, width=800),
+                use_container_width=True
+            )
 
             st.markdown(f"**{title}**")
 
