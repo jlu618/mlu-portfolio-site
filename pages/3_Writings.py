@@ -142,25 +142,23 @@ def clear_selection():
     st.query_params.clear()
     st.rerun()
 
-
 def show_feedback_section():
     st.divider()
-    st.markdown(
-        """
-<div class="feedback-intro">
-</div>
-""",
-        unsafe_allow_html=True,
+
+    st.markdown("### 💬 Share Feedback")
+    st.caption("Leave a kind note, favorite scene, question, or encouragement for the author.")
+
+    components.iframe(
+        f"{FEEDBACK_FORM_URL}?embedded=true",
+        height=520,
+        scrolling=True,
     )
 
-    with st.container(border=True):
-        st.caption("Feedback form")
-        components.iframe(
-            f"{FEEDBACK_FORM_URL}?embedded=true",
-            height=560,
-            scrolling=True,
-        )
-        st.link_button("Open feedback form in a new tab", FEEDBACK_FORM_URL)
+    st.link_button(
+        "Open form in new tab",
+        FEEDBACK_FORM_URL,
+        use_container_width=True,
+    )
 
 
 meta = load_meta()
