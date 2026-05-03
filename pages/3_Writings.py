@@ -161,7 +161,7 @@ def clear_selection():
 def show_feedback_section():
     st.divider()
 
-    st.markdown("### 💬 Share Feedback")
+    st.markdown("#### Share Feedback")
     st.caption("Leave a kind note, favorite scene, question, or encouragement for the author.")
 
     components.iframe(
