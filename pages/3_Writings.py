@@ -34,6 +34,18 @@ st.markdown(
   opacity: 0.82;
 }
 .pdf-frame iframe { border-radius: 8px; }
+.feedback-intro {
+  padding: 1rem 0 0.4rem 0;
+  max-width: 760px;
+}
+.feedback-intro h3 {
+  margin-bottom: 0.25rem;
+}
+.feedback-intro p {
+  line-height: 1.5;
+  opacity: 0.78;
+  margin-top: 0;
+}
 @media (max-width: 640px){
   .block-container { padding-left: 0.9rem; padding-right: 0.9rem; }
   button[kind="secondary"], button[kind="primary"] { width: 100%; }
@@ -131,6 +143,31 @@ def clear_selection():
     st.rerun()
 
 
+def show_feedback_section():
+    st.divider()
+    st.markdown(
+        """
+<div class="feedback-intro">
+  <h3>Share Feedback</h3>
+  <p>
+    Leave a note about the writing, favorite scenes, characters, questions,
+    or encouragement for the author.
+  </p>
+</div>
+""",
+        unsafe_allow_html=True,
+    )
+
+    with st.container(border=True):
+        st.caption("Feedback form")
+        components.iframe(
+            f"{FEEDBACK_FORM_URL}?embedded=true",
+            height=560,
+            scrolling=True,
+        )
+        st.link_button("Open feedback form in a new tab", FEEDBACK_FORM_URL)
+
+
 meta = load_meta()
 writings = meta.get("writings", [])
 
@@ -174,16 +211,6 @@ if selected_id and selected_id in writings_by_id:
         st.markdown('<div class="pdf-frame">', unsafe_allow_html=True)
         components.iframe(preview_url, height=820, scrolling=True)
         st.markdown("</div>", unsafe_allow_html=True)
-
-        st.divider()
-        st.markdown("### Leave a comment or feedback")
-        st.caption("Thank you for reading. Your thoughts and encouragement mean a lot.")
-        components.iframe(
-            f"{FEEDBACK_FORM_URL}?embedded=true",
-            height=600,
-            scrolling=True,
-        )
-        st.link_button("Open feedback form", FEEDBACK_FORM_URL)
     else:
         st.warning("This writing does not have a valid Google Drive file URL.")
         st.code(writing.get("file", ""))
@@ -287,5 +314,6 @@ for _ in range(rows):
                         use_container_width=True,
                     )
 
+show_feedback_section()
 
 
