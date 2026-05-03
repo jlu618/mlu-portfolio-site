@@ -11,6 +11,10 @@ st.set_page_config(page_title="Writings", page_icon="📖", layout="wide")
 
 ROOT = Path(__file__).resolve().parents[1]
 META_PATH = ROOT / "assets" / "data" / "writings.json"
+FEEDBACK_FORM_URL = (
+    "https://docs.google.com/forms/d/e/"
+    "1FAIpQLSdX4vc7KLKybteTHnubqs_0tRfA1eSQ87-iKKCRFVFISOhizA/viewform"
+)
 
 
 st.markdown(
@@ -169,16 +173,17 @@ if selected_id and selected_id in writings_by_id:
     if preview_url:
         st.markdown('<div class="pdf-frame">', unsafe_allow_html=True)
         components.iframe(preview_url, height=820, scrolling=True)
-        
+        st.markdown("</div>", unsafe_allow_html=True)
+
         st.divider()
-        st.markdown("### 💬 Leave a comment or feedback")
+        st.markdown("### Leave a comment or feedback")
+        st.caption("Thank you for reading. Your thoughts and encouragement mean a lot.")
         components.iframe(
-            "https://docs.google.com/forms/d/e/1FAIpQLSdX4vc7KLKybteTHnubqs_0tRfA1eSQ87-iKKCRFVFISOhizA/viewform?usp=publish-editor",
+            f"{FEEDBACK_FORM_URL}?embedded=true",
             height=600,
             scrolling=True,
         )
-
-        st.markdown("</div>", unsafe_allow_html=True)
+        st.link_button("Open feedback form", FEEDBACK_FORM_URL)
     else:
         st.warning("This writing does not have a valid Google Drive file URL.")
         st.code(writing.get("file", ""))
@@ -281,8 +286,6 @@ for _ in range(rows):
                         drive_view_url(writing.get("file", "")),
                         use_container_width=True,
                     )
-
-
 
 
 
