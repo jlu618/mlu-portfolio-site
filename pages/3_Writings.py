@@ -2,7 +2,7 @@ import json
 import re
 from datetime import datetime
 from pathlib import Path
-
+from openai import OpenAI
 import streamlit as st
 import streamlit.components.v1 as components
 
@@ -15,6 +15,22 @@ FEEDBACK_FORM_URL = (
     "https://docs.google.com/forms/d/e/"
     "1FAIpQLSdX4vc7KLKybteTHnubqs_0tRfA1eSQ87-iKKCRFVFISOhizA/viewform"
 )
+WONDERLAND_CHAT_SYSTEM_PROMPT = """
+You are a friendly reading companion for Mila's story "Wonderland".
+
+Answer only questions that are directly about the story, characters, setting,
+plot, themes, scenes, or writing details found in the Wonderland document.
+Use the file_search results as your only source of truth.
+
+If a question is unrelated to Wonderland, politely say:
+"I can only answer questions about Wonderland and Mila's writing on this page."
+
+If the answer is not supported by the retrieved document context, say that the
+writing page does not include enough information to answer. Do not guess, invent
+plot details, or use outside knowledge.
+
+Keep answers concise, warm, and appropriate for a family portfolio website.
+"""
 
 
 st.markdown(
@@ -211,7 +227,6 @@ if selected_id and selected_id in writings_by_id:
     st.stop()
 
 st.title("Writings")
-st.caption("Stories, chapter books, and reflections collected in one growing library.")
 
 all_tags = sorted({tag for item in writings for tag in item_tags(item)})
 all_types = sorted({item.get("type") for item in writings if item.get("type")})
@@ -307,6 +322,52 @@ for _ in range(rows):
                         use_container_width=True,
                     )
 
+
+# ---------- Chat about Wonderland (vector DB + LLM) ----------
+st.markdown("### 💬 Ask about Wonderland")
+
+if "OPENAI_API_KEY" not in st.secrets or "WONDERLAND_VECTOR_STORE_ID" not in st.secrets:
+    st.info("Wonderland chat is not configured yet.")
+else:
+    client = OpenAI(api_key=st.secrets["OPENAI_API_KEY"])
+    vector_store_id = st.secrets["WONDERLAND_VECTOR_STORE_ID"]
+
+    if "wonderland_messages" not in st.session_state:
+        st.session_state.wonderland_messages = []
+
+    for msg in st.session_state.wonderland_messages:
+        with st.chat_message(msg["role"]):
+            st.markdown(msg["content"])
+
+    question = st.chat_input("Ask a question about Wonderland...")
+
+    if question:
+        st.session_state.wonderland_messages.append({
+            "role": "user",
+            "content": question,
+        })
+
+        with st.chat_message("user"):
+            st.markdown(question)
+
+        with st.chat_message("assistant"):
+            with st.spinner("Thinking..."):
+                response = client.responses.create(
+                    model="gpt-4.1-mini",
+                    instructions=WONDERLAND_CHAT_SYSTEM_PROMPT,
+                    input=question,
+                    tools=[{
+                        "type": "file_search",
+                        "vector_store_ids": [vector_store_id],
+                    }],
+                )
+
+                answer = response.output_text
+                st.markdown(answer)
+
+        st.session_state.wonderland_messages.append({
+            "role": "assistant",
+            "content": answer,
+        })
+
 show_feedback_section()
-
-

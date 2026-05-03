@@ -4,17 +4,15 @@ import streamlit as st
 from openai import OpenAI
 
 api_key = st.secrets["OPENAI_API_KEY"]
-print("API KEY:", api_key[:10] if api_key else "None")
 
-client = OpenAI(api_key=st.secrets["OPENAI_API_KEY"])
-print("Client initialized:", client)
+client = OpenAI(api_key=api_key)
 
 # =========================
 # Settings
 # =========================
 
-# First time: leave this blank: ""
-VECTOR_STORE_ID = "vs_69f7977495148191935f490ac85ec4f0" # Wonderland id
+# First time: leave WONDERLAND_VECTOR_STORE_ID blank or omit it in secrets.
+VECTOR_STORE_ID = st.secrets.get("WONDERLAND_VECTOR_STORE_ID", "")
 
 VECTOR_STORE_NAME = "Wonderland Story"
 PDF_PATH = Path("assets/writings_local/Wonderland_test.pdf")
@@ -119,5 +117,5 @@ while True:
 # =========================
 
 print("\nDone!")
-print("Use this vector_store_id in writings.json:")
+print("Store this vector_store_id in .streamlit/secrets.toml as WONDERLAND_VECTOR_STORE_ID:")
 print(vector_store_id)
