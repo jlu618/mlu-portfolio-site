@@ -148,11 +148,6 @@ def show_feedback_section():
     st.markdown(
         """
 <div class="feedback-intro">
-  <h3>Share Feedback</h3>
-  <p>
-    Leave a note about the writing, favorite scenes, characters, questions,
-    or encouragement for the author.
-  </p>
 </div>
 """,
         unsafe_allow_html=True,
