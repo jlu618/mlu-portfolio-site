@@ -165,20 +165,24 @@ def clear_selection():
 def show_feedback_section():
     st.divider()
 
-    st.markdown("#### Share Feedback")
+    st.markdown("#### 💬 Share Feedback")
     st.caption("Leave a kind note, favorite scene, question, or encouragement for the author.")
 
-    components.iframe(
-        f"{FEEDBACK_FORM_URL}?embedded=true",
-        height=520,
-        scrolling=True,
-    )
+    # 👇 Collapse the bulky form
+    with st.expander("Leave a comment (optional)", expanded=False):
+        components.iframe(
+            f"{FEEDBACK_FORM_URL}?embedded=true",
+            height=450,   # slightly smaller than before
+            scrolling=True,
+        )
 
-    st.link_button(
-        "Open form in new tab",
-        FEEDBACK_FORM_URL,
-        use_container_width=True,
-    )
+        st.link_button(
+            "Open full form",
+            FEEDBACK_FORM_URL,
+            use_container_width=True,
+        )
+
+    
 
 
 meta = load_meta()
