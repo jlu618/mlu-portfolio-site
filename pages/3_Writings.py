@@ -339,9 +339,13 @@ else:
         with st.chat_message(msg["role"]):
             st.markdown(msg["content"])
 
-    question = st.chat_input("Ask a question about Wonderland...")
+    question = st.text_input(
+        "Ask a question about Wonderland",
+        placeholder="What would you like to know about Wonderland?",
+        key="wonderland_question",
+    )
 
-    if question:
+    if question and st.button("Ask", use_container_width=True):
         st.session_state.wonderland_messages.append({
             "role": "user",
             "content": question,
