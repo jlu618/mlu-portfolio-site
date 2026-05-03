@@ -62,6 +62,10 @@ st.markdown(
   opacity: 0.78;
   margin-top: 0;
 }
+.chat-footer {
+  margin-top: 0.75rem;
+  padding-top: 0.35rem;
+}
 @media (max-width: 640px){
   .block-container { padding-left: 0.9rem; padding-right: 0.9rem; }
   button[kind="secondary"], button[kind="primary"] { width: 100%; }
@@ -339,39 +343,42 @@ else:
         with st.chat_message(msg["role"]):
             st.markdown(msg["content"])
 
-    question = st.text_input(
-        "Ask a question about Wonderland",
-        placeholder="What would you like to know about Wonderland?",
-        key="wonderland_question",
-    )
+    st.markdown('<div class="chat-footer">', unsafe_allow_html=True)
+    with st.form("wonderland_chat_form", clear_on_submit=True):
+        question_col, ask_col = st.columns([5, 1], vertical_alignment="bottom")
+        with question_col:
+            question = st.text_input(
+                "Ask a question about Wonderland",
+                placeholder="What would you like to know about Wonderland?",
+            )
+        with ask_col:
+            submitted = st.form_submit_button("Ask", use_container_width=True)
+    st.markdown("</div>", unsafe_allow_html=True)
 
-    if question and st.button("Ask", use_container_width=True):
+    if submitted and question.strip():
+        question = question.strip()
         st.session_state.wonderland_messages.append({
             "role": "user",
             "content": question,
         })
 
-        with st.chat_message("user"):
-            st.markdown(question)
+        with st.spinner("Thinking..."):
+            response = client.responses.create(
+                model="gpt-4.1-mini",
+                instructions=WONDERLAND_CHAT_SYSTEM_PROMPT,
+                input=question,
+                tools=[{
+                    "type": "file_search",
+                    "vector_store_ids": [vector_store_id],
+                }],
+            )
 
-        with st.chat_message("assistant"):
-            with st.spinner("Thinking..."):
-                response = client.responses.create(
-                    model="gpt-4.1-mini",
-                    instructions=WONDERLAND_CHAT_SYSTEM_PROMPT,
-                    input=question,
-                    tools=[{
-                        "type": "file_search",
-                        "vector_store_ids": [vector_store_id],
-                    }],
-                )
-
-                answer = response.output_text
-                st.markdown(answer)
+            answer = response.output_text
 
         st.session_state.wonderland_messages.append({
             "role": "assistant",
             "content": answer,
         })
+        st.rerun()
 
 show_feedback_section()
